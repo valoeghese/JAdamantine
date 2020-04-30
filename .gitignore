@@ -1,0 +1,17 @@
+# Ignore Gradle stuff
+.gradle
+build/
+
+# Ignore Eclipse stuff
+.classpath
+.project
+.settings/
+bin/
+
+# Ignore Intellij Stuff
+# someone add to this
+out/
+
+# Ignore VSCode Stuff
+# someone add to this
+*.sln
