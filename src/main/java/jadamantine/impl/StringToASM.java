@@ -1,6 +1,5 @@
 package jadamantine.impl;
 
-import java.util.ArrayList;
 import java.util.Map;
 
 import org.objectweb.asm.Label;
@@ -62,11 +61,71 @@ class StringToASM {
 		String type = data[0];
 
 		switch (type.toUpperCase()) {
+		case "ALOAD": // load object reference from local variable
+			method.visitVarInsn(Opcodes.ALOAD, Integer.parseInt(data[1]));
+			break;
+		case "ASTORE": // store object reference in variable
+			method.visitVarInsn(Opcodes.ASTORE, Integer.parseInt(data[1]));
+			break;
+		case "AALOAD": // array ALOAD
+			method.visitVarInsn(Opcodes.AALOAD, Integer.parseInt(data[1]));
+			break;
+		case "AASTORE": // array ASTORE
+			method.visitVarInsn(Opcodes.AASTORE, Integer.parseInt(data[1]));
+			break;
+		case "BALOAD": // byte array LOAD
+			method.visitVarInsn(Opcodes.BALOAD, Integer.parseInt(data[1]));
+			break;
+		case "BASTORE": // byte array STORE
+			method.visitVarInsn(Opcodes.BASTORE, Integer.parseInt(data[1]));
+			break;
+		case "FLOAD": // load float from local variable
+			method.visitVarInsn(Opcodes.FLOAD, Integer.parseInt(data[1]));
+			break;
+		case "FSTORE": // store float in local variable
+			method.visitVarInsn(Opcodes.FSTORE, Integer.parseInt(data[1]));
+			break;
+		case "FALOAD": // float array LOAD
+			method.visitVarInsn(Opcodes.FALOAD, Integer.parseInt(data[1]));
+			break;
+		case "FASTORE": // float array STORE
+			method.visitVarInsn(Opcodes.FASTORE, Integer.parseInt(data[1]));
+			break;
+		case "DLOAD": // load double from local variable
+			method.visitVarInsn(Opcodes.DLOAD, Integer.parseInt(data[1]));
+			break;
+		case "DSTORE": // store double in local variable
+			method.visitVarInsn(Opcodes.DSTORE, Integer.parseInt(data[1]));
+			break;
+		case "DALOAD": // double array LOAD
+			method.visitVarInsn(Opcodes.DALOAD, Integer.parseInt(data[1]));
+			break;
+		case "DASTORE": // double array STORE
+			method.visitVarInsn(Opcodes.DASTORE, Integer.parseInt(data[1]));
+			break;
 		case "ILOAD": // load int value from local variable
 			method.visitVarInsn(Opcodes.ILOAD, Integer.parseInt(data[1]));
 			break;
-		case "ALOAD": // load object reference from local variable
-			method.visitVarInsn(Opcodes.ALOAD, Integer.parseInt(data[1]));
+		case "ISTORE": // store int in variable
+			method.visitVarInsn(Opcodes.ISTORE, Integer.parseInt(data[1]));
+			break;
+		case "IALOAD": // int array LOAD
+			method.visitVarInsn(Opcodes.IALOAD, Integer.parseInt(data[1]));
+			break;
+		case "IASTORE": // int array STORE
+			method.visitVarInsn(Opcodes.IASTORE, Integer.parseInt(data[1]));
+			break;
+		case "LLOAD": // load long from local variable
+			method.visitVarInsn(Opcodes.LLOAD, Integer.parseInt(data[1]));
+			break;
+		case "LSTORE": // store long in local variable
+			method.visitVarInsn(Opcodes.LSTORE, Integer.parseInt(data[1]));
+			break;
+		case "LALOAD": // long array LOAD
+			method.visitVarInsn(Opcodes.LALOAD, Integer.parseInt(data[1]));
+			break;
+		case "LASTORE": // long array STORE
+			method.visitVarInsn(Opcodes.LASTORE, Integer.parseInt(data[1]));
 			break;
 		case "ICONST_M1": // load int constant -1
 			method.visitInsn(Opcodes.ICONST_M1);
@@ -95,17 +154,11 @@ class StringToASM {
 		case "SIPUSH": // push short
 			method.visitIntInsn(Opcodes.SIPUSH, Integer.parseInt(data[1]));
 			break;
-		case "LDC": // push constant from declared pool
+			/*case "LDC": // push constant from declared pool
 			method.visitIntInsn(Opcodes.LDC, Integer.parseInt(data[1]));
-			break;
-		case "LDC_I": // push int constant from declared pool
+			break;*/
+		case "ILDC": // push int constant from declared pool
 			method.visitLdcInsn(Integer.parseInt(data[1]));
-			break;
-		case "ISTORE": // store int in variable
-			method.visitVarInsn(Opcodes.ISTORE, Integer.parseInt(data[1]));
-			break;
-		case "ASTORE": // store object reference in variable
-			method.visitVarInsn(Opcodes.ASTORE, Integer.parseInt(data[1]));
 			break;
 		case "LABEL": // create a label at this location
 			Label label = new Label();
@@ -118,6 +171,24 @@ class StringToASM {
 		case "INVOKESTATIC": // static method
 			methodData = splitDescriptor(data[1]);
 			method.visitMethodInsn(Opcodes.INVOKESTATIC, methodData[0], methodData[1], methodData[2], Boolean.parseBoolean(data[2]));
+			break;
+		case "INVOKESPECIAL": // special method
+			methodData = splitDescriptor(data[1]);
+			method.visitMethodInsn(Opcodes.INVOKESPECIAL, methodData[0], methodData[1], methodData[2], Boolean.parseBoolean(data[2]));
+			break;
+		case "INVOKECONSTRUCTOR": // added for json thing: utility for constructors.
+			methodData = splitDescriptor(data[1]);
+			method.visitTypeInsn(Opcodes.NEW, methodData[0]);
+			method.visitInsn(Opcodes.DUP);
+			method.visitMethodInsn(Opcodes.INVOKESPECIAL, methodData[0], methodData[1], methodData[2], false);
+			break;
+		case "INVOKEINTERFACE": // invoke interface method
+			methodData = splitDescriptor(data[1]);
+			method.visitMethodInsn(Opcodes.INVOKEINTERFACE, methodData[0], methodData[1], methodData[2], true);
+			break;
+		case "INVOKEVIRTUAL": // invoke instance method
+			methodData = splitDescriptor(data[1]);
+			method.visitMethodInsn(Opcodes.INVOKEVIRTUAL, methodData[0], methodData[1], methodData[2], data.length == 2 ? false : Boolean.parseBoolean(data[2]));
 			break;
 		case "RETURN": // return
 			switch(method.desc.charAt(method.desc.length() - 1)) {
@@ -147,29 +218,11 @@ class StringToASM {
 		case "DUP": // duplicate top of stack
 			method.visitInsn(Opcodes.DUP);
 			break;
-		case "INVOKESPECIAL": // special method
-			methodData = splitDescriptor(data[1]);
-			method.visitMethodInsn(Opcodes.INVOKESPECIAL, methodData[0], methodData[1], methodData[2], Boolean.parseBoolean(data[2]));
-			break;
-		case "INVOKECONSTRUCTOR": // added for json thing: utility for constructors.
-			methodData = splitDescriptor(data[1]);
-			method.visitTypeInsn(Opcodes.NEW, methodData[0]);
-			method.visitInsn(Opcodes.DUP);
-			method.visitMethodInsn(Opcodes.INVOKESPECIAL, methodData[0], methodData[1], methodData[2], false);
-			break;
 		case "PUTSTATIC": // put in static field
 			method.visitFieldInsn(Opcodes.PUTSTATIC, clazz, data[1], data[2]);
 			break;
 		case "GETSTATIC": // get from static field
 			method.visitFieldInsn(Opcodes.GETSTATIC, clazz, data[1], data[2]);
-			break;
-		case "INVOKEINTERFACE": // invoke interface method
-			methodData = splitDescriptor(data[1]);
-			method.visitMethodInsn(Opcodes.INVOKEINTERFACE, methodData[0], methodData[1], methodData[2], true);
-			break;
-		case "INVOKEVIRTUAL": // invoke instance method
-			methodData = splitDescriptor(data[1]);
-			method.visitMethodInsn(Opcodes.INVOKEVIRTUAL, methodData[0], methodData[1], methodData[2], data.length == 2 ? false : Boolean.parseBoolean(data[2]));
 			break;
 		}
 	}
