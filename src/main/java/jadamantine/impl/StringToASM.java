@@ -8,59 +8,50 @@ class StringToASM {
 
 		for (String item : access) {
 			if (!item.isEmpty()) {
-				switch (item.toUpperCase()) {
-				// access width
-				case "PUBLIC":
-					result |= Opcodes.ACC_PUBLIC;
-					break;
-				case "PRIVATE":
-					result |= Opcodes.ACC_PRIVATE;
-					break;
-				case "PROTECTED":
-					result |= Opcodes.ACC_PROTECTED;
-					break;
-				// access type
-				case "STATIC":
-					result |= Opcodes.ACC_STATIC;
-					break;
-				case "FINAL":
-					result |= Opcodes.ACC_FINAL;
-					break;
-				case "SYNCHRONIZED":
-					result |= Opcodes.ACC_SYNCHRONIZED;
-					break;
-				case "TRANSIENT":
-					result |= Opcodes.ACC_TRANSIENT;
-					break;
-				// type
-				case "ENUM":
-					result |= Opcodes.ACC_ENUM;
-					break;
-				case "INTERFACE":
-					result |= Opcodes.ACC_INTERFACE;
-					break;
-				case "ANNOTATION":
-					result |= Opcodes.ACC_ANNOTATION;
-					break;
-				// other
-				case "SYNTHETIC":
-					result |= Opcodes.ACC_SYNTHETIC;
-					break;
-				case "BRIDGE":
-					result |= Opcodes.ACC_BRIDGE;
-					break;
-				case "DEPRECATED":
-					result |= Opcodes.ACC_DEPRECATED;
-					break;
-				case "ABSTRACT":
-					result |= Opcodes.ACC_ABSTRACT;
-					break;
-				case "TRANSITIVE":
-					result |= Opcodes.ACC_TRANSITIVE;
-					break;
-				}
+				result |= accessModifier(item);
 			}
 		}
 		return result;
+	}
+
+	static int accessModifier(String item) {
+		switch (item.toUpperCase()) {
+		// access width
+		case "PUBLIC":
+			return Opcodes.ACC_PUBLIC;
+		case "PRIVATE":
+			return Opcodes.ACC_PRIVATE;
+		case "PROTECTED":
+			return Opcodes.ACC_PROTECTED;
+		// access type
+		case "STATIC":
+			return Opcodes.ACC_STATIC;
+		case "FINAL":
+			return Opcodes.ACC_FINAL;
+		case "SYNCHRONIZED":
+			return Opcodes.ACC_SYNCHRONIZED;
+		case "TRANSIENT":
+			return Opcodes.ACC_TRANSIENT;
+		// type
+		case "ENUM":
+			return Opcodes.ACC_ENUM;
+		case "INTERFACE":
+			return Opcodes.ACC_INTERFACE;
+		case "ANNOTATION":
+			return Opcodes.ACC_ANNOTATION;
+		// other
+		case "SYNTHETIC":
+			return Opcodes.ACC_SYNTHETIC;
+		case "BRIDGE":
+			return Opcodes.ACC_BRIDGE;
+		case "DEPRECATED":
+			return Opcodes.ACC_DEPRECATED;
+		case "ABSTRACT":
+			return Opcodes.ACC_ABSTRACT;
+		case "TRANSITIVE":
+			return Opcodes.ACC_TRANSITIVE;
+		default:
+			return 0;
+		}
 	}
 }

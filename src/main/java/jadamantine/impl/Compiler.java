@@ -1,6 +1,9 @@
 package jadamantine.impl;
 
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -10,6 +13,7 @@ import java.util.function.Consumer;
 import org.apache.commons.math3.util.Pair;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldNode;
 
 import com.google.gson.Gson;
 
@@ -68,17 +72,98 @@ class Compiler implements ICompiler {
 					return null;
 				}
 			}).filter(Filters::nonNull).forEach(classPrimer -> {
+				VerboseOutput.println("~i Compiling class " + classPrimer.getFirst());
 				JSONSource source = classPrimer.getSecond();
 				ClassNode output = new ClassNode(Opcodes.ASM8);
-				output.version = Opcodes.V1_8; // idk what this number is for lol
-				output.name = classPrimer.getFirst();
+				output.version = Opcodes.V1_8;
+				output.name = source.classPackage + "/" + classPrimer.getFirst();
 				output.superName = source.parent;
 				output.access = StringToASM.accessModifiers(source.access.split("\\s"));
 
 				if (output.outerClass != null) {
 					output.outerClass = source.outerClass;
 				}
+
+				VerboseOutput.println("~i Adding fields.");
+				for (String field : source.fields) {
+					VerboseOutput.println("~i Adding fields " + field);
+					output.fields.add(createField(field));
+				}
+	
+				VerboseOutput.println("~i Outputting to File.");
+				try(DataOutputStream dos = new DataOutputStream(new FileOutputStream(new File(outputRoot.getPath() + "/")))) {
+					
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			});
+		}
+	}
+
+	private static FieldNode createField(String fieldEntry) {
+		String[] fieldData = fieldEntry.split("\\s");
+		int i = -1;
+		int temp;
+		int access = 0;
+
+		while ((temp = StringToASM.accessModifier(fieldData[++i])) != 0) {
+			access |= temp;
+		}
+
+		String name = fieldData[i++];
+		String descriptor = fieldData[i++];
+		Object value = i == fieldData.length ? pickDefault(descriptor) : valueOf(descriptor, fieldData[i]);
+
+		return new FieldNode(Opcodes.ASM8, access, name, descriptor, descriptor, value);
+	}
+
+	private static Object pickDefault(String descriptor) {
+		switch (descriptor) {
+		case "B":
+			return (byte) 0;
+		case "S":
+			return (short) 0;
+		case "I":
+			return 0;
+		case "J":
+			return 0L;
+		case "F":
+			return 0f;
+		case "D":
+			return 0.0;
+		case "Z":
+			return false;
+		case "C":
+			return '\u0000';
+		default:
+			return null;
+		}
+	}
+
+	private static Object valueOf(String descriptor, String value) {
+		switch (descriptor) {
+		case "B":
+			return Byte.parseByte(value);
+		case "S":
+			return Short.parseShort(value);
+		case "I":
+			return Integer.parseInt(value);
+		case "J":
+			return Long.parseLong(value);
+		case "F":
+			return Float.parseFloat(value);
+		case "D":
+			return Double.parseDouble(value);
+		case "Z":
+			return Boolean.parseBoolean(value);
+		case "C":
+			return (char) Integer.parseInt(value);
+		default:
+			throw new UnsupportedOperationException("Because of ASM limitations, do not provide default values for objects in the fields. Instead, use the <clinit> method.");
 		}
 	}
 }
