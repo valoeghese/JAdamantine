@@ -24,7 +24,7 @@ public class CompilerMain {
 		@Override
 		public void setArgs(ArgsData args) {
 			this.rootDir = args.getString("srcDir", () -> args.getStringOrDefault("s", "src"));
-			this.outputDir = args.getString("outputDir", () -> args.getStringOrDefault("o", "bin"));
+			this.outputDir = args.getString("outputDir", () -> args.getStringOrDefault("o", "target"));
 			this.verbose = args.getBoolean("verbose") || args.getBoolean("v");
 		}
 

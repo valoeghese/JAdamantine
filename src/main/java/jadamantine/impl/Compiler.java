@@ -1,8 +1,6 @@
 package jadamantine.impl;
 
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,6 +9,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.apache.commons.math3.util.Pair;
+import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
@@ -72,7 +71,7 @@ class Compiler implements ICompiler {
 					return null;
 				}
 			}).filter(Filters::nonNull).forEach(classPrimer -> {
-				VerboseOutput.println("~i Compiling class " + classPrimer.getFirst());
+				VerboseOutput.println("i~ Compiling class " + classPrimer.getFirst());
 				JSONSource source = classPrimer.getSecond();
 				ClassNode output = new ClassNode(Opcodes.ASM8);
 				output.version = Opcodes.V1_8;
@@ -84,20 +83,27 @@ class Compiler implements ICompiler {
 					output.outerClass = source.outerClass;
 				}
 
-				VerboseOutput.println("~i Adding fields.");
+				VerboseOutput.println("i~ Adding fields.");
 				for (String field : source.fields) {
-					VerboseOutput.println("~i Adding fields " + field);
+					VerboseOutput.println("~i Adding field " + field);
 					output.fields.add(createField(field));
 				}
-	
-				VerboseOutput.println("~i Outputting to File.");
-				try(DataOutputStream dos = new DataOutputStream(new FileOutputStream(new File(outputRoot.getPath() + "/")))) {
-					
-				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+
+				VerboseOutput.println("i~ Outputting to File.");
+				File fileOut = new File(outputRoot.getPath() + "/" + output.name + ".class");
+				fileOut.getAbsoluteFile().getParentFile().mkdirs();
+
+				try {
+					fileOut.createNewFile();
+					ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+					output.accept(writer);
+
+					try(FileOutputStream fos = new FileOutputStream(fileOut)) {
+						fos.write(writer.toByteArray());
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			});
@@ -162,6 +168,8 @@ class Compiler implements ICompiler {
 			return Boolean.parseBoolean(value);
 		case "C":
 			return (char) Integer.parseInt(value);
+		case "Ljava/lang/String;":
+			return value;
 		default:
 			throw new UnsupportedOperationException("Because of ASM limitations, do not provide default values for objects in the fields. Instead, use the <clinit> method.");
 		}

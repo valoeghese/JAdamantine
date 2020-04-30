@@ -1,3 +1,6 @@
+# Ignore Test stuff
+target/
+
 # Ignore Gradle stuff
 .gradle
 build/
