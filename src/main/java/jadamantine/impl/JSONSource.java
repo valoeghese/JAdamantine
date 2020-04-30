@@ -13,4 +13,6 @@ class JSONSource {
 	String outerClass = null;
 	@SerializedName("fields")
 	String fields[] = new String[0];
+	@SerializedName("methods")
+	JSONMethodEntry methods[] = new JSONMethodEntry[0];
 }

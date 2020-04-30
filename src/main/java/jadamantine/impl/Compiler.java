@@ -13,6 +13,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.MethodNode;
 
 import com.google.gson.Gson;
 
@@ -85,8 +86,14 @@ class Compiler implements ICompiler {
 
 				VerboseOutput.println("i~ Adding fields.");
 				for (String field : source.fields) {
-					VerboseOutput.println("~i Adding field " + field);
+					VerboseOutput.println("i~ Adding field " + field);
 					output.fields.add(createField(field));
+				}
+
+				VerboseOutput.println("i~ Adding methods.");
+				for (JSONMethodEntry method : source.methods) {
+					VerboseOutput.println("i~ Adding method " + method);
+					output.methods.add(createMethod(method));
 				}
 
 				VerboseOutput.println("i~ Outputting to File.");
@@ -112,19 +119,46 @@ class Compiler implements ICompiler {
 
 	private static FieldNode createField(String fieldEntry) {
 		String[] fieldData = fieldEntry.split("\\s");
+		int i = 0;
+		int accumulativeIndex = 0;
+		int temp;
+		int access = 0;
+
+		while ((temp = StringToASM.accessModifier(fieldData[i])) != 0) {
+			access |= temp;
+			accumulativeIndex += fieldData[i].length() + 1;
+			++i;
+		}
+
+		String name = fieldData[i++];
+		accumulativeIndex += name.length() + 1;
+		String descriptor = fieldData[i++];
+		accumulativeIndex += descriptor.length() + 1;
+
+		String valueRaw = i == fieldData.length ? null : fieldEntry.substring(accumulativeIndex);
+		Object value = valueRaw == null ? pickDefault(descriptor) : valueOf(descriptor, valueRaw);
+
+		return new FieldNode(Opcodes.ASM8, access, name, descriptor, descriptor, value);
+	}
+
+	private static MethodNode createMethod(JSONMethodEntry method) {
+		String methodDescriptor[] = method.descriptor.split("\\s");
+
 		int i = -1;
 		int temp;
 		int access = 0;
 
-		while ((temp = StringToASM.accessModifier(fieldData[++i])) != 0) {
+		while ((temp = StringToASM.accessModifier(methodDescriptor[++i])) != 0) {
 			access |= temp;
 		}
 
-		String name = fieldData[i++];
-		String descriptor = fieldData[i++];
-		Object value = i == fieldData.length ? pickDefault(descriptor) : valueOf(descriptor, fieldData[i]);
+		String descriptorRaw = methodDescriptor[i];
+		i = descriptorRaw.indexOf("(");
+		String name = descriptorRaw.substring(0, i);
+		String descriptor = descriptorRaw.substring(i);
 
-		return new FieldNode(Opcodes.ASM8, access, name, descriptor, descriptor, value);
+		MethodNode result = new MethodNode(Opcodes.ASM8, access, name, descriptor, descriptor, method.exceptions);
+		return result;
 	}
 
 	private static Object pickDefault(String descriptor) {

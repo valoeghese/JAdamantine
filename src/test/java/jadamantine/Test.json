@@ -5,6 +5,7 @@
   "fields": [
     "public static x I",
     "public static y I",
-    "public static target D"
+    "public static target D",
+	"public static final yes Ljava/lang/String; potato\n"
   ]
 }
