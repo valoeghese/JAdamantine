@@ -1,0 +1,18 @@
+{
+  "source_flag": 1,
+  "package": "jadamantine/other",
+  "access": "public",
+  "fields": [
+	"public static final yes Ljava/util/List;"
+  ],
+  "methods": [
+    {
+      "name": "static <clinit>()V",
+      "instructions": [
+        "INVOKECONSTRUCTOR java/util/ArrayList.<init>()V",
+        "PUTSTATIC yes Ljava/util/List;",
+        "RETURN"
+      ]
+    }
+  ]
+}

@@ -7,5 +7,14 @@
     "public static y I",
     "public static target D",
 	"public static final yes Ljava/lang/String; potato\n"
+  ],
+  "methods": [
+    {
+      "name": "static final getTrue()Z",
+      "instructions": [
+        "ICONST_1",
+        "RETURN"
+      ]
+    }
   ]
 }

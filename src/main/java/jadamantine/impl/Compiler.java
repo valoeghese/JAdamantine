@@ -6,15 +6,18 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import org.apache.commons.math3.util.Pair;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 
 import jadamantine.api.ICompiler;
@@ -93,7 +96,7 @@ class Compiler implements ICompiler {
 				VerboseOutput.println("i~ Adding methods.");
 				for (JSONMethodEntry method : source.methods) {
 					VerboseOutput.println("i~ Adding method " + method);
-					output.methods.add(createMethod(method));
+					output.methods.add(createMethod(method, output.name));
 				}
 
 				VerboseOutput.println("i~ Outputting to File.");
@@ -102,7 +105,7 @@ class Compiler implements ICompiler {
 
 				try {
 					fileOut.createNewFile();
-					ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+					ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
 					output.accept(writer);
 
 					try(FileOutputStream fos = new FileOutputStream(fileOut)) {
@@ -141,8 +144,9 @@ class Compiler implements ICompiler {
 		return new FieldNode(Opcodes.ASM8, access, name, descriptor, descriptor, value);
 	}
 
-	private static MethodNode createMethod(JSONMethodEntry method) {
+	private static MethodNode createMethod(JSONMethodEntry method, String clazz) {
 		String methodDescriptor[] = method.descriptor.split("\\s");
+		Map<String, Label> labels = Maps.newHashMap();
 
 		int i = -1;
 		int temp;
@@ -158,6 +162,11 @@ class Compiler implements ICompiler {
 		String descriptor = descriptorRaw.substring(i);
 
 		MethodNode result = new MethodNode(Opcodes.ASM8, access, name, descriptor, descriptor, method.exceptions);
+
+		for (String instruction : method.code) {
+			StringToASM.instruction(result, clazz, instruction, labels);
+		}
+
 		return result;
 	}
 
